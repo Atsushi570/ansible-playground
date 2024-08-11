@@ -1,0 +1,40 @@
+---
+- hosts: all
+  become: true
+  tasks:
+    - name: Install Nginx
+      apt:
+        name: nginx
+        state: latest
+        update_cache: yes
+
+    - name: Remove default Nginx configuration
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+
+    - name: Upload custom Nginx configuration
+      template:
+        src: "{{ playbook_dir }}/../roles/nginx/templates/nginx.conf.j2"
+        dest: /etc/nginx/sites-available/myapp.conf
+
+    - name: Enable Nginx configuration
+      shell: |
+        ln -s /etc/nginx/sites-available/myapp.conf /etc/nginx/sites-enabled/myapp.conf
+        systemctl reload nginx
+
+    - name: Create web root directory
+      file:
+        path: /var/www/html
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: '0755'
+
+    - name: Upload index.html
+      copy:
+        src: "{{ playbook_dir }}/../roles/nginx/files/index.html"
+        dest: /var/www/html/index.html
+        owner: www-data
+        group: www-data
+        mode: '0644'
