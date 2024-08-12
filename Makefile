@@ -12,8 +12,12 @@ INVENTORY_FILE=inventory/hosts.ini
 all: create provision
 
 create:
+	@if [ -z "$(network)" ]; then \
+		echo "Error: network is not set. Use 'make create network=<network_interface>'"; \
+		exit 1; \
+	fi
 	@echo "Creating the VM..."
-	@multipass launch $(OS_VERSION) --name $(VM_NAME) --cpus $(CPU) --memory $(MEMORY) --disk $(DISK) --cloud-init $(CLOUD_CONFIG)
+	@multipass launch $(OS_VERSION) --name $(VM_NAME) --cpus $(CPU) --memory $(MEMORY) --disk $(DISK) --cloud-init $(CLOUD_CONFIG) --network=$(network)
 	@echo "VM created successfully. Please update $(INVENTORY_FILE) manually if needed."
 
 provision:
